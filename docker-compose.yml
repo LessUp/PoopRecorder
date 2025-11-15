@@ -1,0 +1,45 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: poop
+      POSTGRES_PASSWORD: poop_pass
+      POSTGRES_DB: poop_recorder
+    ports:
+      - '5432:5432'
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - ./docker/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - appnet
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      DATABASE_URL: postgresql://poop:poop_pass@db:5432/poop_recorder?schema=public
+    depends_on:
+      - db
+    ports:
+      - '3001:3001'
+    networks:
+      - appnet
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE: http://backend:3001
+    depends_on:
+      - backend
+    ports:
+      - '5173:80'
+    networks:
+      - appnet
+
+volumes:
+  dbdata:
+
+networks:
+  appnet:

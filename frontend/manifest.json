@@ -1,0 +1,9 @@
+{
+  "name": "肠道健康管理平台",
+  "short_name": "健康管理",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2c7be5",
+  "icons": []
+}

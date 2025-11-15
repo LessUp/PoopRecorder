@@ -1,0 +1,37 @@
+{
+  "name": "poop-recorder-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "start": "node dist/server.js",
+    "build": "tsc",
+    "prisma:generate": "prisma generate",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+  },
+  "dependencies": {
+    "@prisma/client": "5.18.0",
+    "bcryptjs": "2.4.3",
+    "cors": "2.8.5",
+    "dotenv": "16.4.5",
+    "express": "4.21.1",
+    "jsonwebtoken": "9.0.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "4.17.21",
+    "@types/jest": "29.5.12",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "20.11.30",
+    "@types/supertest": "2.0.16",
+    "jest": "29.7.0",
+    "prisma": "5.18.0",
+    "supertest": "6.3.4",
+    "ts-jest": "29.1.2",
+    "ts-node-dev": "2.0.0",
+    "typescript": "5.6.3"
+  }
+}

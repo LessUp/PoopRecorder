@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Volume {
+  small
+  medium
+  large
+}
+
+enum Color {
+  brown
+  dark_brown
+  yellow
+  green
+  black
+  red
+}
+
+enum AlertType {
+  constipation
+  diarrhea
+  custom
+}
+
+model User {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  passwordHash String?
+  provider   String
+  status     String
+  createdAt  DateTime @default(now())
+  devices    Device[]
+  entries    StoolEntry[]
+  dietLogs   DietLog[]
+  alerts     Alert[]
+  analytics  AnalyticsCache[]
+  privacy    PrivacyRequest[]
+}
+
+model Device {
+  id               String   @id @default(cuid())
+  user             User     @relation(fields: [userId], references: [id])
+  userId           String
+  deviceFingerprint String
+  createdAt        DateTime @default(now())
+}
+
+model StoolEntry {
+  id              String   @id @default(cuid())
+  user            User     @relation(fields: [userId], references: [id])
+  userId          String
+  timestampMinute DateTime
+  bristolType     Int
+  smellScore      Int
+  color           Color
+  volume          Volume
+  symptoms        String[]
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  version         Int      @default(1)
+}
+
+model DietLog {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  timestamp DateTime
+  items     Json
+  tags      String[]
+}
+
+model AnalyticsCache {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  period    String
+  metrics   Json
+  updatedAt DateTime @updatedAt
+}
+
+model Alert {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  type        AlertType
+  status      String
+  triggeredAt DateTime
+  metadata    Json
+}
+
+model PrivacyRequest {
+  id           String   @id @default(cuid())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       String
+  type         String
+  status       String
+  requestedAt  DateTime @default(now())
+  processedAt  DateTime?
+}
