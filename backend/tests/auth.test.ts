@@ -3,14 +3,16 @@ import app from '../src/server'
 
 describe('Auth', () => {
   const email = 'test@example.com'
-  const password = 'testpass123'
+  const password = 'TestPass123'
   it('register and login', async () => {
     const reg = await request(app).post('/auth/register').send({ email, password })
     expect([200,201]).toContain(reg.status)
+    expect(reg.body.success).toBe(true)
     const res = await request(app).post('/auth/login').send({ email, password })
     expect(res.status).toBe(200)
-    expect(typeof res.body.token).toBe('string')
-    const token = res.body.token
+    expect(res.body.success).toBe(true)
+    expect(typeof res.body.data.token).toBe('string')
+    const token = res.body.data.token
     const payload = {
       timestampMinute: new Date().toISOString(),
       bristolType: 4,
@@ -22,8 +24,9 @@ describe('Auth', () => {
     }
     const post = await request(app).post('/entries').set('Authorization', `Bearer ${token}`).send(payload)
     expect(post.status).toBe(201)
+    expect(post.body.success).toBe(true)
     const list = await request(app).get('/entries').set('Authorization', `Bearer ${token}`)
     expect(list.status).toBe(200)
-    expect(Array.isArray(list.body)).toBe(true)
+    expect(Array.isArray(list.body.data)).toBe(true)
   })
 })

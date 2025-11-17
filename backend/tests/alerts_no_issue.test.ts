@@ -11,7 +11,8 @@ describe('Alerts no issue', () => {
     }
     const res = await request(app).get('/alerts').set('x-user-id','demo')
     expect(res.status).toBe(200)
-    const arr = res.body as any[]
+    expect(res.body.success).toBe(true)
+    const arr = res.body.data as any[]
     expect(arr.length >= 0).toBe(true)
   })
 })

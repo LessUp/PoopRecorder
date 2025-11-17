@@ -16,6 +16,7 @@ describe('Alerts', () => {
     }
     const res = await request(app).get('/alerts').set('x-user-id','demo')
     expect(res.status).toBe(200)
-    expect(Array.isArray(res.body)).toBe(true)
+    expect(res.body.success).toBe(true)
+    expect(Array.isArray(res.body.data)).toBe(true)
   })
 })

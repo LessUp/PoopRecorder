@@ -20,31 +20,36 @@ describe('API', () => {
     }
     const post = await request(app).post('/entries').set('x-user-id','demo').send(payload)
     expect(post.status).toBe(201)
+    expect(post.body.success).toBe(true)
     const list = await request(app).get('/entries').set('x-user-id','demo')
     expect(list.status).toBe(200)
-    expect(Array.isArray(list.body)).toBe(true)
-    expect(list.body.length).toBeGreaterThan(0)
+    expect(Array.isArray(list.body.data)).toBe(true)
+    expect(list.body.data.length).toBeGreaterThan(0)
   })
 
   it('analytics frequency and score', async () => {
     const freq = await request(app).get('/analytics/frequency?period=week').set('x-user-id','demo')
     expect(freq.status).toBe(200)
-    expect(freq.body.period).toBe('week')
+    expect(freq.body.success).toBe(true)
+    expect(freq.body.data.period).toBe('week')
     const score = await request(app).get('/analytics/score').set('x-user-id','demo')
     expect(score.status).toBe(200)
-    expect(typeof score.body.score).toBe('number')
+    expect(typeof score.body.data.score).toBe('number')
   })
 
   it('alerts', async () => {
     const res = await request(app).get('/alerts').set('x-user-id','demo')
     expect(res.status).toBe(200)
-    expect(Array.isArray(res.body)).toBe(true)
+    expect(res.body.success).toBe(true)
+    expect(Array.isArray(res.body.data)).toBe(true)
   })
 
   it('privacy export and delete', async () => {
     const exp = await request(app).post('/privacy/export').set('x-user-id','demo')
     expect(exp.status).toBe(200)
-    const del = await request(app).post('/privacy/delete').set('x-user-id','demo')
+    expect(exp.body.success).toBe(true)
+    const del = await request(app).post('/privacy/delete').set('x-user-id','demo').send({ confirmation: 'DELETE_MY_DATA' })
     expect(del.status).toBe(200)
+    expect(del.body.success).toBe(true)
   })
 })

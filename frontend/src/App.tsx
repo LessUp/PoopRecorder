@@ -9,14 +9,6 @@ import History from './pages/History'
 import Analysis from './pages/Analysis'
 import Settings from './pages/Settings'
 import Privacy from './pages/Privacy'
- 
-import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
-import Home from './pages/Home'
-import Record from './pages/Record'
-import History from './pages/History'
-import Analysis from './pages/Analysis'
-import Settings from './pages/Settings'
-import Privacy from './pages/Privacy'
 
 type Volume = 'small' | 'medium' | 'large'
 type Color = 'brown' | 'dark_brown' | 'yellow' | 'green' | 'black' | 'red'
@@ -170,11 +162,11 @@ function Login({ onAuthed }: { onAuthed: (token: string, email: string) => void 
           <Link className="btn" to="/privacy">隐私</Link>
         </nav>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Home token={auth.token} />} />
           <Route path="/record" element={<Record token={auth.token} onSaved={() => {}} />} />
-          <Route path="/history" element={<History />} />
+          <Route path="/history" element={<History token={auth.token} />} />
           <Route path="/analysis" element={<Analysis token={auth.token} />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="/settings" element={<Settings token={auth.token} />} />
           <Route path="/privacy" element={<Privacy token={auth.token} />} />
         </Routes>
       </BrowserRouter>
