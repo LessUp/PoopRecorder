@@ -23,6 +23,7 @@ export default function Analysis() {
   const [alerts, setAlerts] = useState<any[]>([])
   const [bristolData, setBristolData] = useState<Record<number, number>>({})
   const [colorData, setColorData] = useState<Record<string, number>>({})
+  const [advancedAnalysis, setAdvancedAnalysis] = useState<any>(null)
   const [period, setPeriod] = useState<'week' | 'month' | 'quarter'>('week')
   const [loading, setLoading] = useState(true)
 
@@ -58,7 +59,16 @@ export default function Analysis() {
       })
       if (alertsRes.ok) {
         const alertsData = await alertsRes.json()
-        setAlerts(alertsData)
+        setAlerts(alertsData.data || [])
+      }
+
+      // Fetch advanced analysis
+      const advancedRes = await fetch(`${API_BASE}/analysis/advanced`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : { 'x-user-id': 'demo' }
+      })
+      if (advancedRes.ok) {
+        const advancedData = await advancedRes.json()
+        setAdvancedAnalysis(advancedData.data)
       }
       
       // Fetch entries for detailed analysis
@@ -245,6 +255,71 @@ export default function Analysis() {
           </div>
         </div>
       </div>
+
+      {/* Advanced AI Analysis */}
+      {advancedAnalysis && (
+        <div className="card bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-900/20 dark:to-gray-800 border border-indigo-100 dark:border-indigo-800">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-indigo-900 dark:text-indigo-100 flex items-center gap-2">
+              <span className="text-2xl">🧬</span> 
+              智能专家分析 
+              <span className="text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 px-2 py-0.5 rounded-full">
+                AI Beta
+              </span>
+            </h3>
+            <div className={`px-3 py-1 rounded-full text-sm font-bold ${
+              advancedAnalysis.riskLevel === 'Low' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+              advancedAnalysis.riskLevel === 'Medium' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
+              'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+            }`}>
+              风险等级: {advancedAnalysis.riskLevel === 'Low' ? '低' : advancedAnalysis.riskLevel === 'Medium' ? '中' : '高'}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {advancedAnalysis.findings.length > 0 ? (
+              <div className="bg-white dark:bg-gray-900/50 rounded-lg p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-2">
+                  <span>🔍</span> 分析发现
+                </h4>
+                <ul className="space-y-2">
+                  {advancedAnalysis.findings.map((finding: string, idx: number) => (
+                    <li key={idx} className="flex items-start gap-2 text-gray-700 dark:text-gray-300 text-sm">
+                      <span className="mt-1 text-indigo-500">•</span>
+                      {finding}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <div className="text-gray-500 dark:text-gray-400 text-center py-4 text-sm">
+                暂无异常发现，继续保持！
+              </div>
+            )}
+
+            {advancedAnalysis.references.length > 0 && (
+              <div className="mt-4">
+                <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                  参考文献 (Based on Medical Literature)
+                </h4>
+                <div className="grid gap-2">
+                  {advancedAnalysis.references.map((ref: any, idx: number) => (
+                    <div key={idx} className="text-xs bg-gray-50 dark:bg-gray-800 p-2 rounded border border-gray-200 dark:border-gray-700">
+                      <p className="font-semibold text-gray-700 dark:text-gray-300">📄 {ref.title}</p>
+                      <p className="text-gray-500 dark:text-gray-400 mt-1">
+                        {ref.authors} · <i>{ref.journal} ({ref.year})</i>
+                      </p>
+                      <p className="text-indigo-600 dark:text-indigo-400 mt-1 italic">
+                        "{ref.relevance}"
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Main Trend Chart */}
       <div className="card">

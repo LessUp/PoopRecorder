@@ -6,6 +6,7 @@ import helmet from 'helmet'
 import { body, validationResult, query } from 'express-validator'
 import { createEntry, listEntries, deleteAllForUser } from './repo'
 import { authMiddleware, login, register } from './auth'
+import { AnalysisEngine } from './analysis_engine'
 
 type Volume = 'small' | 'medium' | 'large'
 type Color = 'brown' | 'dark_brown' | 'yellow' | 'green' | 'black' | 'red'
@@ -299,6 +300,33 @@ app.get('/analytics/score', (req: any, res) => {
       res.status(500).json({ 
         error: 'internal_error', 
         message: 'Failed to calculate health score',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
+    })
+})
+
+app.get('/analysis/advanced', (req: any, res) => {
+  const userId = req.userId || req.headers['x-user-id'] as string || 'demo'
+  if (!userId) {
+    return res.status(401).json({ error: 'unauthorized', message: 'User ID is required' })
+  }
+
+  listEntries(userId)
+    .then(rows => {
+      // The analysis engine expects Prisma StoolEntry objects
+      // listEntries returns exactly that (or compatible shape from memory)
+      const result = AnalysisEngine.analyze(rows as any)
+      
+      res.json({ 
+        success: true,
+        data: result
+      })
+    })
+    .catch(error => {
+      console.error('Error performing advanced analysis:', error)
+      res.status(500).json({ 
+        error: 'internal_error', 
+        message: 'Failed to perform advanced analysis',
         details: process.env.NODE_ENV === 'development' ? error.message : undefined
       })
     })
