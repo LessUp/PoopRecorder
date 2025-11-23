@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { listEntries as idbListEntries } from '../idb'
 import { useAuth } from '../contexts/AuthContext'
-import { StoolEntry, Color } from '../types'
+import { StoolEntry } from '../types'
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:3001'
 

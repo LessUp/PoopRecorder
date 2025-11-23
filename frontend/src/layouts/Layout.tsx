@@ -49,7 +49,7 @@ export default function Layout() {
                   </button>
                 </div>
               ) : (
-                <Link to="/" className="text-sm font-medium text-blue-600 hover:text-blue-700">
+                <Link to="/login" className="text-sm font-medium text-blue-600 hover:text-blue-700">
                   登录
                 </Link>
               )}
