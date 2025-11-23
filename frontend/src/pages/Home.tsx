@@ -1,21 +1,14 @@
 import { useEffect, useState } from 'react'
 import { listEntries as idbListEntries } from '../idb'
 import TrendChart from '../components/TrendChart'
+import { useAuth } from '../contexts/AuthContext'
+import { StoolEntry } from '../types'
+import { Link } from 'react-router-dom'
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:3001'
 
-type StoolEntry = {
-  id: string
-  timestampMinute: string
-  bristolType: 1 | 2 | 3 | 4 | 5 | 6 | 7
-  smellScore: 1 | 2 | 3 | 4 | 5
-  color: string
-  volume: string
-  symptoms: string[]
-  notes?: string
-}
-
-export default function Home({ token }: { token?: string }) {
+export default function Home() {
+  const { token } = useAuth()
   const [entries, setEntries] = useState<StoolEntry[]>([])
   const [healthScore, setHealthScore] = useState<number | null>(null)
   const [alerts, setAlerts] = useState<string[]>([])
@@ -87,11 +80,11 @@ export default function Home({ token }: { token?: string }) {
   }
 
   const getHealthStatus = (score: number | null) => {
-    if (score === null) return { status: '未知', color: 'text-gray-500' }
-    if (score >= 80) return { status: '优秀', color: 'text-green-600' }
-    if (score >= 60) return { status: '良好', color: 'text-blue-600' }
-    if (score >= 40) return { status: '一般', color: 'text-yellow-600' }
-    return { status: '需要改善', color: 'text-red-600' }
+    if (score === null) return { status: '未知', color: 'text-gray-500', bg: 'bg-gray-100' }
+    if (score >= 80) return { status: '优秀', color: 'text-green-600', bg: 'bg-green-100' }
+    if (score >= 60) return { status: '良好', color: 'text-blue-600', bg: 'bg-blue-100' }
+    if (score >= 40) return { status: '一般', color: 'text-yellow-600', bg: 'bg-yellow-100' }
+    return { status: '需要改善', color: 'text-red-600', bg: 'bg-red-100' }
   }
 
   const healthStatus = getHealthStatus(healthScore)
@@ -99,150 +92,184 @@ export default function Home({ token }: { token?: string }) {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-gray-500">加载中...</div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* 健康概览面板 */}
+    <div className="space-y-6 animate-fade-in">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">健康概览</h1>
+          <p className="text-gray-500 dark:text-gray-400">欢迎回来，今天感觉如何？</p>
+        </div>
+        <Link to="/record" className="btn btn-primary shadow-lg shadow-blue-600/20">
+          <span className="mr-2">➕</span>
+          记录一次
+        </Link>
+      </div>
+
+      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card bg-gradient-to-br from-green-50 to-green-100">
-          <div className="flex items-center justify-between">
+        <div className="card bg-gradient-to-br from-white to-green-50 dark:from-gray-800 dark:to-green-900/20 border-green-100 dark:border-green-900">
+          <div className="flex items-start justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-green-800">健康评分</h3>
-              <div className="text-3xl font-bold text-green-600">
-                {healthScore ?? '--'}
-              </div>
-              <div className={`text-sm ${healthStatus.color}`}>
-                {healthStatus.status}
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">健康评分</p>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {healthScore ?? '--'}
+                </span>
+                <span className={`text-sm font-medium px-2 py-0.5 rounded-full ${healthStatus.bg} ${healthStatus.color}`}>
+                  {healthStatus.status}
+                </span>
               </div>
             </div>
-            <div className="w-16 h-16 bg-green-200 rounded-full flex items-center justify-center">
+            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
               <span className="text-2xl">💚</span>
             </div>
           </div>
         </div>
 
-        <div className="card bg-gradient-to-br from-blue-50 to-blue-100">
-          <div className="flex items-center justify-between">
+        <div className="card bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-blue-900/20 border-blue-100 dark:border-blue-900">
+          <div className="flex items-start justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-blue-800">记录完成度</h3>
-              <div className="text-3xl font-bold text-blue-600">
-                {completionRate()}%
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">记录完成度</p>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {completionRate()}%
+                </span>
+                <span className="text-sm text-gray-500">最近7天</span>
               </div>
-              <div className="text-sm text-blue-600">最近7天</div>
             </div>
-            <div className="w-16 h-16 bg-blue-200 rounded-full flex items-center justify-center">
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
               <span className="text-2xl">📊</span>
             </div>
           </div>
         </div>
 
-        <div className="card bg-gradient-to-br from-orange-50 to-orange-100">
-          <div className="flex items-center justify-between">
+        <div className="card bg-gradient-to-br from-white to-orange-50 dark:from-gray-800 dark:to-orange-900/20 border-orange-100 dark:border-orange-900">
+          <div className="flex items-start justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-orange-800">异常提醒</h3>
-              <div className="text-3xl font-bold text-orange-600">
-                {alerts.length}
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">异常提醒</p>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {alerts.length}
+                </span>
+                <span className="text-sm text-gray-500">需要关注</span>
               </div>
-              <div className="text-sm text-orange-600">需要关注</div>
             </div>
-            <div className="w-16 h-16 bg-orange-200 rounded-full flex items-center justify-center">
+            <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-xl">
               <span className="text-2xl">⚠️</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 异常提醒 */}
+      {/* Alerts Section */}
       {alerts.length > 0 && (
-        <div className="card bg-yellow-50 border border-yellow-200">
-          <h3 className="text-lg font-semibold text-yellow-800 mb-3">健康提醒</h3>
-          <div className="space-y-2">
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-xl">⚠️</span>
+            <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">健康提醒</h3>
+          </div>
+          <div className="space-y-2 ml-8">
             {alerts.map((alert, index) => (
-              <div key={index} className="flex items-start space-x-2">
-                <span className="text-yellow-600">⚠️</span>
-                <span className="text-yellow-700">{alert}</span>
-              </div>
+              <p key={index} className="text-sm text-yellow-700 dark:text-yellow-300">
+                {alert}
+              </p>
             ))}
           </div>
         </div>
       )}
 
-      {/* 最近记录 */}
-      <div className="card">
-        <h3 className="text-lg font-semibold mb-4">最近记录</h3>
-        {recentEntries.length === 0 ? (
-          <div className="text-gray-500 text-center py-8">
-            暂无记录，开始记录您的健康数据吧！
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent History */}
+        <div className="card h-full">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="font-bold text-gray-900 dark:text-gray-100">最近记录</h3>
+            <Link to="/history" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+              查看全部
+            </Link>
           </div>
-        ) : (
-          <div className="space-y-3">
-            {recentEntries.map((entry) => (
-              <div key={entry.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-medium">{entry.bristolType}</span>
+          
+          {recentEntries.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-4xl mb-3">📝</div>
+              <p className="text-gray-500">暂无记录，开始第一条记录吧！</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {recentEntries.map((entry) => (
+                <div key={entry.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors border border-transparent hover:border-gray-100 dark:hover:border-gray-700">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold
+                    ${entry.bristolType <= 2 ? 'bg-red-100 text-red-700' : 
+                      entry.bristolType >= 6 ? 'bg-yellow-100 text-yellow-700' : 
+                      'bg-green-100 text-green-700'}`}>
+                    B{entry.bristolType}
                   </div>
-                  <div>
-                    <div className="font-medium">
-                      {new Date(entry.timestampMinute).toLocaleDateString('zh-CN')}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
+                        {new Date(entry.timestampMinute).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                      {entry.symptoms.length > 0 && (
+                        <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
+                          {entry.symptoms.length} 症状
+                        </span>
+                      )}
                     </div>
-                    <div className="text-sm text-gray-600">
-                      Bristol: {entry.bristolType} | 气味: {entry.smellScore} | 颜色: {entry.color}
-                    </div>
+                    <p className="text-sm text-gray-500 truncate mt-0.5">
+                      气味: {entry.smellScore} | 颜色: {entry.color}
+                    </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm text-gray-500">
-                    {entry.symptoms.length > 0 && `症状: ${entry.symptoms.length}`}
-                  </div>
-                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Trend Chart */}
+        <div className="card h-full">
+          <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-6">7天趋势</h3>
+          <div className="h-[300px] w-full">
+            {Object.keys(weeklyTrend).length > 0 ? (
+              <TrendChart counts={weeklyTrend} />
+            ) : (
+              <div className="h-full flex items-center justify-center text-gray-500">
+                暂无趋势数据
               </div>
-            ))}
+            )}
           </div>
-        )}
+        </div>
       </div>
 
-      {/* 趋势图表 */}
-      <div className="card">
-        <h3 className="text-lg font-semibold mb-4">7天趋势</h3>
-        {Object.keys(weeklyTrend).length > 0 ? (
-          <TrendChart counts={weeklyTrend} />
-        ) : (
-          <div className="text-gray-500 text-center py-8">
-            暂无趋势数据
-          </div>
-        )}
-      </div>
-
-      {/* 快速操作 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <a href="#/record" className="card bg-green-50 hover:bg-green-100 transition-colors cursor-pointer block">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-green-200 rounded-full flex items-center justify-center">
-              <span className="text-2xl">➕</span>
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Link to="/analysis" className="card hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+              📈
             </div>
             <div>
-              <h4 className="font-semibold text-green-800">快速记录</h4>
-              <p className="text-sm text-green-600">记录今天的健康数据</p>
+              <h4 className="font-semibold text-gray-900 dark:text-gray-100">详细分析</h4>
+              <p className="text-sm text-gray-500">查看长期健康趋势</p>
             </div>
           </div>
-        </a>
+        </Link>
         
-        <a href="#/analysis" className="card bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer block">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center">
-              <span className="text-2xl">📈</span>
+        <Link to="/settings" className="card hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 text-gray-600 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+              ⚙️
             </div>
             <div>
-              <h4 className="font-semibold text-blue-800">详细分析</h4>
-              <p className="text-sm text-blue-600">查看健康趋势和建议</p>
+              <h4 className="font-semibold text-gray-900 dark:text-gray-100">偏好设置</h4>
+              <p className="text-sm text-gray-500">管理通知和数据</p>
             </div>
           </div>
-        </a>
+        </Link>
       </div>
     </div>
   )

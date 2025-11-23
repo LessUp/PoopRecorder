@@ -1,6 +1,7 @@
 import TrendChart from '../components/TrendChart'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Bar } from 'react-chartjs-2'
+import { useAuth } from '../contexts/AuthContext'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,7 +16,8 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:3001'
 
-export default function Analysis({ token }: { token?: string }) {
+export default function Analysis() {
+  const { token } = useAuth()
   const [counts, setCounts] = useState<Record<string, number>>({})
   const [healthScore, setHealthScore] = useState<number | null>(null)
   const [alerts, setAlerts] = useState<any[]>([])
@@ -89,11 +91,11 @@ export default function Analysis({ token }: { token?: string }) {
   }
 
   const getHealthStatus = (score: number | null) => {
-    if (score === null) return { status: '未知', color: 'text-gray-500', bg: 'bg-gray-100' }
-    if (score >= 80) return { status: '优秀', color: 'text-green-600', bg: 'bg-green-100' }
-    if (score >= 60) return { status: '良好', color: 'text-blue-600', bg: 'bg-blue-100' }
-    if (score >= 40) return { status: '一般', color: 'text-yellow-600', bg: 'bg-yellow-100' }
-    return { status: '需要改善', color: 'text-red-600', bg: 'bg-red-100' }
+    if (score === null) return { status: '未知', color: 'text-gray-500', bg: 'bg-gray-100 dark:bg-gray-700' }
+    if (score >= 80) return { status: '优秀', color: 'text-green-600 dark:text-green-400', bg: 'bg-green-100 dark:bg-green-900/30' }
+    if (score >= 60) return { status: '良好', color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-100 dark:bg-blue-900/30' }
+    if (score >= 40) return { status: '一般', color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-100 dark:bg-yellow-900/30' }
+    return { status: '需要改善', color: 'text-red-600 dark:text-red-400', bg: 'bg-red-100 dark:bg-red-900/30' }
   }
 
   const healthStatus = getHealthStatus(healthScore)
@@ -106,10 +108,8 @@ export default function Analysis({ token }: { token?: string }) {
       backgroundColor: [
         '#ef4444', '#f97316', '#f59e0b', '#84cc16', '#22c55e', '#10b981', '#06b6d4'
       ],
-      borderColor: [
-        '#dc2626', '#ea580c', '#d97706', '#65a30d', '#16a34a', '#059669', '#0891b2'
-      ],
-      borderWidth: 1
+      borderRadius: 8,
+      borderSkipped: false as const,
     }]
   }
 
@@ -127,42 +127,32 @@ export default function Analysis({ token }: { token?: string }) {
       backgroundColor: [
         '#a16207', '#92400e', '#ca8a04', '#16a34a', '#171717', '#dc2626'
       ],
-      borderWidth: 1
+      borderRadius: 8,
     }]
   }
 
   const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top' as const,
+        display: false,
       },
       title: {
-        display: true,
-        text: 'Bristol类型分布'
+        display: false,
       }
     },
     scales: {
       y: {
-        beginAtZero: true
-      }
-    }
-  }
-
-  const colorChartOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top' as const,
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(156, 163, 175, 0.1)'
+        }
       },
-      title: {
-        display: true,
-        text: '颜色分布'
-      }
-    },
-    scales: {
-      y: {
-        beginAtZero: true
+      x: {
+        grid: {
+          display: false
+        }
       }
     }
   }
@@ -170,143 +160,152 @@ export default function Analysis({ token }: { token?: string }) {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-gray-500">加载分析数据中...</div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* 控制面板 */}
-      <div className="card">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">健康分析</h2>
-          <div className="flex space-x-2">
-            {(['week', 'month', 'quarter'] as const).map((p) => (
-              <button
-                key={p}
-                onClick={() => setPeriod(p)}
-                className={`px-4 py-2 rounded-md ${
-                  period === p 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {p === 'week' ? '周' : p === 'month' ? '月' : '季度'}
-              </button>
-            ))}
-          </div>
+    <div className="space-y-6 animate-fade-in pb-20">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">健康分析</h2>
+        <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+          {(['week', 'month', 'quarter'] as const).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                period === p 
+                  ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm' 
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              {p === 'week' ? '本周' : p === 'month' ? '本月' : '本季度'}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* 健康评分卡片 */}
+      {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className={`card ${healthStatus.bg}`}>
+        <div className={`card ${healthStatus.bg} border-none`}>
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold">健康评分</h3>
-              <div className="text-3xl font-bold">
-                {healthScore ?? '--'}
-              </div>
-              <div className={`text-sm ${healthStatus.color}`}>
-                {healthStatus.status}
+              <p className="text-sm font-medium opacity-80 text-gray-700 dark:text-gray-300">健康评分</p>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {healthScore ?? '--'}
+                </span>
+                <span className={`text-sm font-bold px-2 py-0.5 rounded-full bg-white/50 dark:bg-black/20 ${healthStatus.color}`}>
+                  {healthStatus.status}
+                </span>
               </div>
             </div>
-            <div className="w-16 h-16 bg-white bg-opacity-50 rounded-full flex items-center justify-center">
-              <span className="text-2xl">📊</span>
+            <div className="w-12 h-12 bg-white/50 dark:bg-black/10 rounded-full flex items-center justify-center text-2xl">
+              📊
             </div>
           </div>
         </div>
 
-        <div className="card bg-blue-50">
+        <div className="card bg-blue-50 dark:bg-blue-900/20 border-none">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-blue-800">记录天数</h3>
-              <div className="text-3xl font-bold text-blue-600">
-                {Object.keys(counts).length}
-              </div>
-              <div className="text-sm text-blue-600">
-                {period === 'week' ? '最近7天' : period === 'month' ? '最近30天' : '最近90天'}
+              <p className="text-sm font-medium text-blue-800 dark:text-blue-200">记录天数</p>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-blue-700 dark:text-blue-300">
+                  {Object.keys(counts).length}
+                </span>
+                <span className="text-sm text-blue-600 dark:text-blue-400 opacity-80">
+                  {period === 'week' ? '最近7天' : period === 'month' ? '最近30天' : '最近90天'}
+                </span>
               </div>
             </div>
-            <div className="w-16 h-16 bg-blue-200 rounded-full flex items-center justify-center">
-              <span className="text-2xl">📅</span>
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-800/50 rounded-full flex items-center justify-center text-2xl">
+              📅
             </div>
           </div>
         </div>
 
-        <div className="card bg-orange-50">
+        <div className="card bg-orange-50 dark:bg-orange-900/20 border-none">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-orange-800">健康提醒</h3>
-              <div className="text-3xl font-bold text-orange-600">
-                {alerts.length}
-              </div>
-              <div className="text-sm text-orange-600">
-                需要关注
+              <p className="text-sm font-medium text-orange-800 dark:text-orange-200">健康提醒</p>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-orange-700 dark:text-orange-300">
+                  {alerts.length}
+                </span>
+                <span className="text-sm text-orange-600 dark:text-orange-400 opacity-80">
+                  需要关注
+                </span>
               </div>
             </div>
-            <div className="w-16 h-16 bg-orange-200 rounded-full flex items-center justify-center">
-              <span className="text-2xl">⚠️</span>
+            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-800/50 rounded-full flex items-center justify-center text-2xl">
+              ⚠️
             </div>
           </div>
         </div>
       </div>
 
-      {/* 趋势图表 */}
+      {/* Main Trend Chart */}
       <div className="card">
-        <h3 className="text-lg font-semibold mb-4">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-6">
           {period === 'week' ? '7天' : period === 'month' ? '30天' : '90天'}排便趋势
         </h3>
-        {Object.keys(counts).length > 0 ? (
-          <TrendChart counts={counts} />
-        ) : (
-          <div className="text-gray-500 text-center py-8">
-            暂无趋势数据
-          </div>
-        )}
+        <div className="h-[300px] w-full">
+          {Object.keys(counts).length > 0 ? (
+            <TrendChart counts={counts} />
+          ) : (
+            <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400">
+              暂无趋势数据
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* 数据分析图表 */}
+      {/* Analysis Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card">
-          <h3 className="text-lg font-semibold mb-4">Bristol类型分布</h3>
-          {Object.keys(bristolData).length > 0 ? (
-            <div style={{ height: 300 }}>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-6">Bristol 类型分布</h3>
+          <div className="h-[300px]">
+            {Object.keys(bristolData).length > 0 ? (
               <Bar data={bristolChartData} options={chartOptions} />
-            </div>
-          ) : (
-            <div className="text-gray-500 text-center py-8">
-              暂无Bristol类型数据
-            </div>
-          )}
+            ) : (
+              <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400">
+                暂无 Bristol 类型数据
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="card">
-          <h3 className="text-lg font-semibold mb-4">颜色分布</h3>
-          {Object.keys(colorData).length > 0 ? (
-            <div style={{ height: 300 }}>
-              <Bar data={colorChartData} options={colorChartOptions} />
-            </div>
-          ) : (
-            <div className="text-gray-500 text-center py-8">
-              暂无颜色数据
-            </div>
-          )}
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-6">颜色分布</h3>
+          <div className="h-[300px]">
+            {Object.keys(colorData).length > 0 ? (
+              <Bar data={colorChartData} options={chartOptions} />
+            ) : (
+              <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400">
+                暂无颜色数据
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* 健康建议 */}
+      {/* Health Advice */}
       {alerts.length > 0 && (
-        <div className="card bg-yellow-50 border border-yellow-200">
-          <h3 className="text-lg font-semibold text-yellow-800 mb-3">健康建议</h3>
-          <div className="space-y-2">
+        <div className="card bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800">
+          <h3 className="text-lg font-bold text-yellow-800 dark:text-yellow-200 mb-4">健康建议</h3>
+          <div className="space-y-3">
             {alerts.map((alert, index) => (
-              <div key={index} className="flex items-start space-x-2">
-                <span className="text-yellow-600">💡</span>
+              <div key={index} className="flex items-start gap-3 bg-white dark:bg-gray-800 p-3 rounded-lg border border-yellow-100 dark:border-yellow-900/50 shadow-sm">
+                <span className="text-xl">💡</span>
                 <div>
-                  <div className="font-medium text-yellow-800">{alert.type === 'constipation' ? '便秘提醒' : '腹泻提醒'}</div>
-                  <div className="text-yellow-700">{alert.message}</div>
+                  <div className="font-semibold text-yellow-900 dark:text-yellow-100 mb-1">
+                    {alert.type === 'constipation' ? '便秘提醒' : '腹泻提醒'}
+                  </div>
+                  <div className="text-sm text-yellow-800 dark:text-yellow-200/80 leading-relaxed">
+                    {alert.message}
+                  </div>
                 </div>
               </div>
             ))}
@@ -314,16 +313,28 @@ export default function Analysis({ token }: { token?: string }) {
         </div>
       )}
 
-      {/* 分析说明 */}
-      <div className="card bg-gray-50">
-        <h3 className="text-lg font-semibold mb-3">分析说明</h3>
-        <div className="space-y-2 text-sm text-gray-600">
-          <p>• <strong>Bristol评分:</strong> 1-2型可能表示便秘，3-4型为正常，5-7型可能表示腹泻</p>
-          <p>• <strong>健康评分:</strong> 综合考虑排便频率稳定性、Bristol类型中位数、气味强度等因素</p>
-          <p>• <strong>趋势分析:</strong> 观察排便模式的变化，及时发现异常情况</p>
-          <p>• <strong>颜色分析:</strong> 正常为棕色，其他颜色可能反映饮食或健康状况变化</p>
+      {/* Legend/Info */}
+      <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6 border border-gray-100 dark:border-gray-700">
+        <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">指标说明</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex gap-2">
+            <span className="font-bold text-gray-900 dark:text-gray-200">Bristol:</span>
+            <span>1-2型可能表示便秘，3-4型为正常，5-7型可能表示腹泻</span>
+          </div>
+          <div className="flex gap-2">
+            <span className="font-bold text-gray-900 dark:text-gray-200">健康评分:</span>
+            <span>综合考虑排便频率、形状、气味等因素的综合指标</span>
+          </div>
+          <div className="flex gap-2">
+            <span className="font-bold text-gray-900 dark:text-gray-200">趋势分析:</span>
+            <span>帮助您发现长期的肠道健康规律</span>
+          </div>
+          <div className="flex gap-2">
+            <span className="font-bold text-gray-900 dark:text-gray-200">颜色分析:</span>
+            <span>正常大便通常为棕色，持续异常颜色需引起注意</span>
+          </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

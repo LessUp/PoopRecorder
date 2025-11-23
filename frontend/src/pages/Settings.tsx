@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
+import { useAuth } from '../contexts/AuthContext'
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:3001'
 
-export default function Settings({ token }: { token?: string }) {
+export default function Settings() {
+  const { token } = useAuth()
   const [settings, setSettings] = useState({
     theme: 'light',
     language: 'zh-CN',
@@ -113,39 +115,39 @@ export default function Settings({ token }: { token?: string }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-2xl mx-auto animate-fade-in pb-20">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">设置</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">设置</h2>
         {message && (
-          <div className="px-4 py-2 bg-green-100 text-green-800 rounded-md">
+          <div className="px-4 py-2 bg-green-100 text-green-800 rounded-lg text-sm font-medium animate-fade-in">
             {message}
           </div>
         )}
       </div>
 
       {/* 外观设置 */}
-      <div className="card">
-        <h3 className="text-lg font-semibold mb-4">外观设置</h3>
+      <div className="card bg-white dark:bg-gray-800">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">外观设置</h3>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">主题</label>
+            <label className="label">主题</label>
             <select
               value={settings.theme}
               onChange={(e) => setSettings({ ...settings, theme: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="input"
             >
               <option value="light">浅色主题</option>
               <option value="dark">深色主题</option>
-              <option value="auto">自动</option>
+              <option value="auto">自动跟随系统</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">语言</label>
+            <label className="label">语言</label>
             <select
               value={settings.language}
               onChange={(e) => setSettings({ ...settings, language: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="input"
             >
               <option value="zh-CN">简体中文</option>
               <option value="en-US">English</option>
@@ -155,19 +157,19 @@ export default function Settings({ token }: { token?: string }) {
       </div>
 
       {/* 通知设置 */}
-      <div className="card">
-        <h3 className="text-lg font-semibold mb-4">通知设置</h3>
-        <div className="space-y-4">
+      <div className="card bg-white dark:bg-gray-800">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">通知设置</h3>
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium">启用通知</label>
-              <p className="text-xs text-gray-500">接收健康提醒和分析报告</p>
+              <label className="text-sm font-medium text-gray-900 dark:text-gray-100">启用通知</label>
+              <p className="text-xs text-gray-500 dark:text-gray-400">接收健康提醒和分析报告</p>
             </div>
             <button
               type="button"
               onClick={() => setSettings({ ...settings, notifications: !settings.notifications })}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                settings.notifications ? 'bg-blue-600' : 'bg-gray-200'
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                settings.notifications ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
               }`}
             >
               <span
@@ -180,14 +182,14 @@ export default function Settings({ token }: { token?: string }) {
 
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium">每日提醒</label>
-              <p className="text-xs text-gray-500">每天提醒您记录健康数据</p>
+              <label className="text-sm font-medium text-gray-900 dark:text-gray-100">每日提醒</label>
+              <p className="text-xs text-gray-500 dark:text-gray-400">每天提醒您记录健康数据</p>
             </div>
             <button
               type="button"
               onClick={() => setSettings({ ...settings, defaultReminder: !settings.defaultReminder })}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                settings.defaultReminder ? 'bg-blue-600' : 'bg-gray-200'
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                settings.defaultReminder ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
               }`}
             >
               <span
@@ -199,13 +201,13 @@ export default function Settings({ token }: { token?: string }) {
           </div>
 
           {settings.defaultReminder && (
-            <div>
-              <label className="block text-sm font-medium mb-2">提醒时间</label>
+            <div className="animate-fade-in">
+              <label className="label">提醒时间</label>
               <input
                 type="time"
                 value={settings.reminderTime}
                 onChange={(e) => setSettings({ ...settings, reminderTime: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="input"
               />
             </div>
           )}
@@ -213,19 +215,19 @@ export default function Settings({ token }: { token?: string }) {
       </div>
 
       {/* 数据同步 */}
-      <div className="card">
-        <h3 className="text-lg font-semibold mb-4">数据同步</h3>
-        <div className="space-y-4">
+      <div className="card bg-white dark:bg-gray-800">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">数据同步</h3>
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium">自动同步</label>
-              <p className="text-xs text-gray-500">网络可用时自动同步数据</p>
+              <label className="text-sm font-medium text-gray-900 dark:text-gray-100">自动同步</label>
+              <p className="text-xs text-gray-500 dark:text-gray-400">网络可用时自动同步数据</p>
             </div>
             <button
               type="button"
               onClick={() => setSettings({ ...settings, autoSync: !settings.autoSync })}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                settings.autoSync ? 'bg-blue-600' : 'bg-gray-200'
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                settings.autoSync ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
               }`}
             >
               <span
@@ -238,14 +240,14 @@ export default function Settings({ token }: { token?: string }) {
 
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium">离线模式</label>
-              <p className="text-xs text-gray-500">支持离线记录和查看</p>
+              <label className="text-sm font-medium text-gray-900 dark:text-gray-100">离线模式</label>
+              <p className="text-xs text-gray-500 dark:text-gray-400">优先使用本地存储，减少网络请求</p>
             </div>
             <button
               type="button"
               onClick={() => setSettings({ ...settings, offlineMode: !settings.offlineMode })}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                settings.offlineMode ? 'bg-blue-600' : 'bg-gray-200'
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                settings.offlineMode ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
               }`}
             >
               <span
@@ -259,15 +261,15 @@ export default function Settings({ token }: { token?: string }) {
       </div>
 
       {/* 数据管理 */}
-      <div className="card">
-        <h3 className="text-lg font-semibold mb-4">数据管理</h3>
+      <div className="card bg-white dark:bg-gray-800">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">数据管理</h3>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">数据保留期限</label>
+            <label className="label">数据保留期限</label>
             <select
               value={settings.dataRetention}
               onChange={(e) => setSettings({ ...settings, dataRetention: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="input"
             >
               <option value="forever">永久保留</option>
               <option value="1year">1年</option>
@@ -277,15 +279,15 @@ export default function Settings({ token }: { token?: string }) {
             </select>
           </div>
 
-          <div className="flex space-x-2">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={exportSettings}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="btn btn-secondary flex-1"
             >
-              导出设置
+              📤 导出设置
             </button>
-            <label className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 cursor-pointer">
-              导入设置
+            <label className="btn btn-secondary flex-1 cursor-pointer">
+              📥 导入设置
               <input
                 type="file"
                 accept=".json"
@@ -298,34 +300,30 @@ export default function Settings({ token }: { token?: string }) {
       </div>
 
       {/* 操作按钮 */}
-      <div className="card">
-        <h3 className="text-lg font-semibold mb-4">操作</h3>
-        <div className="flex space-x-4">
-          <button
-            onClick={saveSettings}
-            disabled={saving}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-          >
-            {saving ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>保存中...</span>
-              </>
-            ) : (
-              <>
-                <span>💾</span>
-                <span>保存设置</span>
-              </>
-            )}
-          </button>
-          
-          <button
-            onClick={resetSettings}
-            className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
-          >
-            重置设置
-          </button>
-        </div>
+      <div className="flex flex-col sm:flex-row gap-4 pt-4">
+        <button
+          onClick={saveSettings}
+          disabled={saving}
+          className="btn btn-primary flex-1 shadow-lg shadow-blue-600/20 disabled:shadow-none"
+        >
+          {saving ? (
+            <span className="flex items-center justify-center gap-2">
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              保存中...
+            </span>
+          ) : (
+            <span className="flex items-center justify-center gap-2">
+              💾 保存设置
+            </span>
+          )}
+        </button>
+        
+        <button
+          onClick={resetSettings}
+          className="btn btn-secondary text-red-600 hover:bg-red-50 hover:border-red-200 dark:hover:bg-red-900/20 dark:hover:border-red-800"
+        >
+          重置所有设置
+        </button>
       </div>
     </div>
   )
